@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SKM-Sistem-Keuangan-Madrasah-impl" default="default" basedir="..">
+    <property file="nbproject/project.properties"/>
+    <target name="init">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" source="${javac.source}" target="${javac.target}" includeantruntime="false" classpath="${javac.classpath}"/>
+        <copy file="config.properties" todir="${build.classes.dir}" failonerror="false"/>
+    </target>
+    <target name="jar" depends="compile">
+        <jar destfile="${dist.jar}" basedir="${build.classes.dir}" manifest="${manifest.file}"/>
+    </target>
+    <target name="run" depends="compile">
+        <java classname="${main.class}" fork="true" classpath="${run.classpath}"/>
+    </target>
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+    <target name="default" depends="jar"/>
+</project>
