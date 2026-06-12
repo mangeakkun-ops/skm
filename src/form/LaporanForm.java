@@ -36,9 +36,9 @@ public class LaporanForm extends JPanel {
         dari.setText(LocalDate.now().withDayOfMonth(1).toString());
         sampai.setText(LocalDate.now().toString());
 
-        JButton show  = UIUtils.button("TAMPILKAN",    UIUtils.BLUE);
+        JButton show  = UIUtils.button("TAMPILKAN",         UIUtils.BLUE);
         JButton csv   = UIUtils.buttonOutline("Export CSV",   UIUtils.GREEN);
-        JButton excel = UIUtils.buttonOutline("Export Excel",  new Color(31, 120, 50));
+        JButton excel = UIUtils.buttonOutline("Export Excel", new Color(31, 120, 50));
         JButton pdf   = UIUtils.buttonOutline("Export PDF",   UIUtils.RED);
 
         JTable table = new JTable(kasModel);
@@ -67,13 +67,15 @@ public class LaporanForm extends JPanel {
 
         JComboBox<Integer> bulan = new JComboBox<>();
         for (int i = 1; i <= 12; i++) bulan.addItem(i);
+        bulan.setSelectedItem(LocalDate.now().getMonthValue()); // default bulan ini
+
         JComboBox<Integer> tahun = new JComboBox<>();
         for (int i = 2024; i <= 2030; i++) tahun.addItem(i);
         tahun.setSelectedItem(LocalDate.now().getYear());
 
-        JButton show  = UIUtils.button("TAMPILKAN",    UIUtils.BLUE);
+        JButton show  = UIUtils.button("TAMPILKAN",         UIUtils.BLUE);
         JButton csv   = UIUtils.buttonOutline("Export CSV",   UIUtils.GREEN);
-        JButton excel = UIUtils.buttonOutline("Export Excel",  new Color(31, 120, 50));
+        JButton excel = UIUtils.buttonOutline("Export Excel", new Color(31, 120, 50));
         JButton pdf   = UIUtils.buttonOutline("Export PDF",   UIUtils.RED);
 
         JTable table = new JTable(tungModel);
@@ -114,133 +116,130 @@ public class LaporanForm extends JPanel {
         else    UIUtils.showError(this,   "Export PDF gagal");
     }
 
-// ── Export Excel ────────────────────────────────────────────
-private void exportExcel(DefaultTableModel m, String defaultName, String judul) {
-    // File chooser dengan filter xlsx
-    JFileChooser fc = new JFileChooser();
-    fc.setSelectedFile(new File(System.getProperty("user.home") + "/Downloads/" + defaultName));
-    fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-            "Excel Files (*.xlsx)", "xlsx"));
-    if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+    // ── Export Excel ────────────────────────────────────────────
+    private void exportExcel(DefaultTableModel m, String defaultName, String judul) {
+        JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File(System.getProperty("user.home") + "/Downloads/" + defaultName));
+        fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Excel Files (*.xlsx)", "xlsx"));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
 
-    File file = fc.getSelectedFile();
-    // Pastikan ekstensi .xlsx
-    if (!file.getName().toLowerCase().endsWith(".xlsx"))
-        file = new File(file.getAbsolutePath() + ".xlsx");
+        File file = fc.getSelectedFile();
+        if (!file.getName().toLowerCase().endsWith(".xlsx"))
+            file = new File(file.getAbsolutePath() + ".xlsx");
 
-    final File finalFile = file;
+        final File finalFile = file;
 
-    // Jalankan di background thread supaya UI tidak freeze
-    UIUtils.showSuccess(this, "Sedang mengexport, harap tunggu...");
-    SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
-        @Override
-        protected Boolean doInBackground() throws Exception {
-            try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb =
-                         new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+        UIUtils.showSuccess(this, "Sedang mengexport, harap tunggu...");
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb =
+                             new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
 
-                org.apache.poi.xssf.usermodel.XSSFSheet sheet = wb.createSheet(judul);
+                    org.apache.poi.xssf.usermodel.XSSFSheet sheet = wb.createSheet(judul);
 
-                // Style header
-                org.apache.poi.xssf.usermodel.XSSFCellStyle headerStyle = wb.createCellStyle();
-                org.apache.poi.xssf.usermodel.XSSFFont headerFont = wb.createFont();
-                headerFont.setBold(true);
-                headerFont.setColor(org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
-                headerStyle.setFont(headerFont);
-                headerStyle.setFillForegroundColor(
-                        new org.apache.poi.xssf.usermodel.XSSFColor(
-                                new byte[]{(byte) 31, (byte) 78, (byte) 121}, null));
-                headerStyle.setFillPattern(
-                        org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
-                headerStyle.setAlignment(
-                        org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
-                headerStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
-                headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
-                headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    // Style header
+                    org.apache.poi.xssf.usermodel.XSSFCellStyle headerStyle = wb.createCellStyle();
+                    org.apache.poi.xssf.usermodel.XSSFFont headerFont = wb.createFont();
+                    headerFont.setBold(true);
+                    headerFont.setColor(org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
+                    headerStyle.setFont(headerFont);
+                    headerStyle.setFillForegroundColor(
+                            new org.apache.poi.xssf.usermodel.XSSFColor(
+                                    new byte[]{(byte) 31, (byte) 78, (byte) 121}, null));
+                    headerStyle.setFillPattern(
+                            org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+                    headerStyle.setAlignment(
+                            org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+                    headerStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
 
-                // Style data biasa
-                org.apache.poi.xssf.usermodel.XSSFCellStyle dataStyle = wb.createCellStyle();
-                dataStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
-                dataStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
-                dataStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    // Style data biasa
+                    org.apache.poi.xssf.usermodel.XSSFCellStyle dataStyle = wb.createCellStyle();
+                    dataStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    dataStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    dataStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
 
-                // Style zebra
-                org.apache.poi.xssf.usermodel.XSSFCellStyle zebraStyle = wb.createCellStyle();
-                zebraStyle.cloneStyleFrom(dataStyle);
-                zebraStyle.setFillForegroundColor(
-                        new org.apache.poi.xssf.usermodel.XSSFColor(
-                                new byte[]{(byte) 235, (byte) 241, (byte) 250}, null));
-                zebraStyle.setFillPattern(
-                        org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+                    // Style zebra
+                    org.apache.poi.xssf.usermodel.XSSFCellStyle zebraStyle = wb.createCellStyle();
+                    zebraStyle.cloneStyleFrom(dataStyle);
+                    zebraStyle.setFillForegroundColor(
+                            new org.apache.poi.xssf.usermodel.XSSFColor(
+                                    new byte[]{(byte) 235, (byte) 241, (byte) 250}, null));
+                    zebraStyle.setFillPattern(
+                            org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
 
-                // Judul
-                org.apache.poi.ss.usermodel.Row titleRow = sheet.createRow(0);
-                org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
-                titleCell.setCellValue(judul);
-                org.apache.poi.xssf.usermodel.XSSFCellStyle titleStyle = wb.createCellStyle();
-                org.apache.poi.xssf.usermodel.XSSFFont titleFont = wb.createFont();
-                titleFont.setBold(true);
-                titleFont.setFontHeightInPoints((short) 14);
-                titleStyle.setFont(titleFont);
-                titleCell.setCellStyle(titleStyle);
-                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(
-                        0, 0, 0, m.getColumnCount() - 1));
+                    // Judul
+                    org.apache.poi.ss.usermodel.Row titleRow = sheet.createRow(0);
+                    org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
+                    titleCell.setCellValue(judul);
+                    org.apache.poi.xssf.usermodel.XSSFCellStyle titleStyle = wb.createCellStyle();
+                    org.apache.poi.xssf.usermodel.XSSFFont titleFont = wb.createFont();
+                    titleFont.setBold(true);
+                    titleFont.setFontHeightInPoints((short) 14);
+                    titleStyle.setFont(titleFont);
+                    titleCell.setCellStyle(titleStyle);
+                    sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(
+                            0, 0, 0, m.getColumnCount() - 1));
 
-                // Tanggal
-                org.apache.poi.ss.usermodel.Row dateRow = sheet.createRow(1);
-                dateRow.createCell(0).setCellValue("Dicetak: " + LocalDate.now());
+                    // Tanggal cetak
+                    org.apache.poi.ss.usermodel.Row dateRow = sheet.createRow(1);
+                    dateRow.createCell(0).setCellValue("Dicetak: " + LocalDate.now());
 
-                // Header kolom
-                org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(3);
-                for (int col = 0; col < m.getColumnCount(); col++) {
-                    org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(col);
-                    cell.setCellValue(m.getColumnName(col));
-                    cell.setCellStyle(headerStyle);
-                }
-
-                // Data
-                for (int row = 0; row < m.getRowCount(); row++) {
-                    org.apache.poi.ss.usermodel.Row dataRow = sheet.createRow(row + 4);
+                    // Header kolom
+                    org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(3);
                     for (int col = 0; col < m.getColumnCount(); col++) {
-                        org.apache.poi.ss.usermodel.Cell cell = dataRow.createCell(col);
-                        cell.setCellValue(String.valueOf(m.getValueAt(row, col)));
-                        cell.setCellStyle(row % 2 == 0 ? dataStyle : zebraStyle);
+                        org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(col);
+                        cell.setCellValue(m.getColumnName(col));
+                        cell.setCellStyle(headerStyle);
                     }
-                }
 
-                // Set lebar kolom manual (ganti autoSizeColumn yang lambat)
-                int[] colWidths = {3500, 8000, 4000, 4000, 4000};
-                for (int col = 0; col < m.getColumnCount(); col++) {
-                    int width = col < colWidths.length ? colWidths[col] : 4000;
-                    sheet.setColumnWidth(col, width);
-                }
+                    // Data
+                    for (int row = 0; row < m.getRowCount(); row++) {
+                        org.apache.poi.ss.usermodel.Row dataRow = sheet.createRow(row + 4);
+                        for (int col = 0; col < m.getColumnCount(); col++) {
+                            org.apache.poi.ss.usermodel.Cell cell = dataRow.createCell(col);
+                            cell.setCellValue(String.valueOf(m.getValueAt(row, col)));
+                            cell.setCellStyle(row % 2 == 0 ? dataStyle : zebraStyle);
+                        }
+                    }
 
-                // Simpan
-                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(finalFile)) {
-                    wb.write(fos);
+                    // Lebar kolom manual
+                    int[] colWidths = {3500, 8000, 4000, 4000, 4000};
+                    for (int col = 0; col < m.getColumnCount(); col++) {
+                        int width = col < colWidths.length ? colWidths[col] : 4000;
+                        sheet.setColumnWidth(col, width);
+                    }
+
+                    try (java.io.FileOutputStream fos = new java.io.FileOutputStream(finalFile)) {
+                        wb.write(fos);
+                    }
+                    return true;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return false;
                 }
-                return true;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return false;
             }
-        }
 
-        @Override
-        protected void done() {
-            try {
-                boolean ok = get();
-                if (ok)
-                    UIUtils.showSuccess(LaporanForm.this,
-                            "Export Excel berhasil!\n" + finalFile.getAbsolutePath());
-                else
-                    UIUtils.showError(LaporanForm.this, "Export Excel gagal!");
-            } catch (Exception e) {
-                UIUtils.showError(LaporanForm.this, "Export Excel gagal: " + e.getMessage());
+            @Override
+            protected void done() {
+                try {
+                    boolean ok = get();
+                    if (ok)
+                        UIUtils.showSuccess(LaporanForm.this,
+                                "Export Excel berhasil!\n" + finalFile.getAbsolutePath());
+                    else
+                        UIUtils.showError(LaporanForm.this, "Export Excel gagal!");
+                } catch (Exception e) {
+                    UIUtils.showError(LaporanForm.this, "Export Excel gagal: " + e.getMessage());
+                }
             }
-        }
-    };
-    worker.execute();
-}
+        };
+        worker.execute();
+    }
+
     // ── Helper ──────────────────────────────────────────────────
     private File chooseSaveFile(String defaultName) {
         JFileChooser fc = new JFileChooser();
